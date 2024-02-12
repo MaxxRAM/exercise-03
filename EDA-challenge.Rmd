@@ -8,31 +8,36 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(readr)
-f<- file.choose()
+library(curl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+f<- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/KamilarAndCooperData.csv"
 d<- read_csv(f, col_names = T)
 attach(d)
 
 #Question 1
-d$BSD<- d$Body_mass_male_mean/d$Body_mass_female_mean
+(d$BSD<- d$Body_mass_male_mean/d$Body_mass_female_mean)
 # TCA (the code above) creates a new variable BSD, which is a ratio of avg male to avg female body mass
 
+
 #Question 2
-d$sex_ratio<- d$AdultFemale/d$AdultMales
+(d$sex_ratio<- d$AdultFemale/d$AdultMales)
 # TCA creates sex_ratio variable which is ratio of adult females to adult males in a group
 
 #Question 3
 radius<- sqrt(d$HomeRange_km2/(pi))
 diameter<- 2*radius
-d$DI<- d$DayLength_km/diameter
+(d$DI<- d$DayLength_km/diameter)
 # TCA creates Defensibility index (DI) which is a ratio of day range length to diameter of the home range
 
 #Question 4
 four<- ggplot(d, aes(DayLength_km, log(Move)))
 four<- four + geom_point(aes(color=factor(Family)), na.rm = T)
-four<- four+ geom_smooth(method = "lm", na.rm = T)
+(four<- four+ geom_smooth(method = "lm", na.rm = T))
 four
 # TCA creates a linear regression plot for all species relating daylength_km to Move in the dataset.
-four<- four + facet_wrap(~Family, ncol = 7)
+(four<- four + facet_wrap(~Family, ncol = 7))
 four
 # TCA creates ggplot "four" which sets daylength_km to the x axis and Move to the y axis and plots points color coded by family. A linear regression line is created for all species overall and by each family. Species that spend more time moving travel further over. However, within families, this only appears to be true for Atelidae, Cebidae,Cercopithidae and Lemuridae. Other species with sufficient data points (Hominidae) do not show a positive correlation between the two variables. All other families either do not have sufficient data points or no data points at all to answer this question. 'Move' should be transformed create a better regression line.
 
@@ -40,31 +45,32 @@ four
 #Question 5
 five<- ggplot(d, aes(log(DayLength_km), log(d$MeanGroupSize)))
 five<- five + geom_point(aes(color=factor(Family)), na.rm = T)
-five<- five+ geom_smooth(method = "lm", na.rm = T)
+(five<- five+ geom_smooth(method = "lm", na.rm = T))
 five
 # TCA produces a ggplot of log(daylength_km) on the x axis and log(meangroupsize) on the y axis, then draws a linear regression line along the points. Each point is color coded to the family that species is from. Species that live in larger groups travel further overall with a strong positive correlation. 
-five<- five + facet_wrap(~Family, ncol = 7)
+(five<- five + facet_wrap(~Family, ncol = 7))
 five
 # TCA separates the ggplot by family. Atelidae, Cebidae, Cercopithidae, Hominidae, Indriidae, Lemuridae, and Pitheciidae all show a positive correlation and sufficient data points, thus within these families larger groups tend to travel further overall. Daubentonidae and Hylobatidae do not have sufficient data points to make this claim and all other families have no data points. Transforming both mean group size and day length_km are useful for drawing a clearer linear regression line. 
 
 #Question 6
 six<- ggplot(d, aes(d$BSD, d$Canine_Dimorphism))
 six<- six + geom_point(aes(color=factor(Family)), na.rm = T)
-six<- six + geom_smooth(method = "lm", na.rm = T)
+(six<- six + geom_smooth(method = "lm", na.rm = T))
 six
 # TCA creates a ggplot for canine dimorphism on the y axis against body size dimorphism on the x axis. There is a strong positive correlation between these two variables, thus taxa with greater size dimorphism show greater canine dimorphism. Points are color coded by family. 
 
 #Question 7
-d<- d|> mutate(diet_strategy=case_when(Fruit>=50 ~ "frugivore", Leaves>=50 ~ "folivore", Leaves<50 & Fruit<50 ~"omnivore"))
+(d<- d|> mutate(diet_strategy=case_when(Fruit>=50 ~ "frugivore", Leaves>=50 ~ "folivore", Leaves<50 & Fruit<50 ~"omnivore")))
 d[, "diet_strategy"]
 # TCA creates a new variable "diet_strategy" and creates a new column that organizes species by the types of foods that make up their diet. species are labeled either "frugivore", "folivore", or "omnivore".
-dietboxplot<- dietboxplot + geom_boxplot(na.rm=T) + geom_point(color="pink", position= "jitter")
-dietboxplot
+dietboxplot<- ggplot(d, aes(d$diet_strategy, d$MeanGroupSize))
+(dietboxplot<- dietboxplot + geom_boxplot(na.rm=T) + geom_point(color="pink", position= "jitter"))
+(dietboxplot)
 # TCA creates a box plot with mean groupsize on the y axis and the 3 diet strategy types on the x axis. According to this data, frugivores do not live in larger groups than folivores, and there does not seem to be a pattern between group size and dietary strategy. 
 
 #Question 8
-d<- d|> mutate(Binomial = paste0(Genus, " ", Species))|> select(Binomial, Family, Brain_Size_Species_Mean, Body_mass_male_mean)|> group_by(Family)|> mutate(average_brainsize= mean(Brain_Size_Species_Mean, na.rm = T), average_male_mass= mean(Body_mass_male_mean, na.rm = T))|> arrange(Brain_Size_Species_Mean)
-
+(d<- d|> mutate(Binomial = paste0(Genus, " ", Species))|> select(Binomial, Family, Brain_Size_Species_Mean, Body_mass_male_mean)|> group_by(Family)|> mutate(average_brainsize= mean(Brain_Size_Species_Mean, na.rm = T), average_male_mass= mean(Body_mass_male_mean, na.rm = T))|> arrange(Brain_Size_Species_Mean))
+d
 
 
 ```
